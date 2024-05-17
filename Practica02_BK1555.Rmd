@@ -1,6 +1,10 @@
+
+
+
+
 ---
 title: "Practica02"
-author: "Christian David Meza Gonzàlez"
+author: "Christian Meza, Carlos Alama y Rony Orocollo"
 date: "2024-05-17"
 output: html_document
 ---
@@ -13,7 +17,7 @@ output: html_document
 
 Queremos programar un programa de tipo web scrapping con el que podamos obtener una página web, mediante su URL, y poder analizar su contenido HTML con tal de extraer datos e información específica.
 
-####1. Descargar la página web de la URL indicada, y almacenarlo en un formato de "R" apto para ser tratado.
+#### 1.1. Descargar la página web de la URL indicada, y almacenarlo en un formato de "R" apto para ser tratado.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -38,7 +42,7 @@ contenido_html <- content(respuesta, as = "text", encoding = "UTF-8")
 contenido_xml <- htmlTreeParse(contenido_html, useInternalNodes = TRUE)
 ```
 
-#### Analizar el contenido de la web, buscando el título de la página (que en HTML se etiqueta como “title”).
+##### 1.2. Analizar el contenido de la web, buscando el título de la página (que en HTML se etiqueta como “title”).
 ```{r get_titulo}
 # Extraer el título de la página
 titulo <- xpathSApply(contenido_xml, "//title", xmlValue)
@@ -46,7 +50,7 @@ titulo <- xpathSApply(contenido_xml, "//title", xmlValue)
 
 El titulo es: `r titulo`.
 
-#### Analizar el contenido de la web, buscando todos los enlaces (que en HTML se etiquetan como “a”), buscando el texto del enlace, así como la URL.
+##### 1.3. Analizar el contenido de la web, buscando todos los enlaces (que en HTML se etiquetan como “a”), buscando el texto del enlace, así como la URL.
 
 ```{r mostrar_enlaces}
 
@@ -56,21 +60,24 @@ urls_enlaces <- xpathSApply(contenido_xml, "//a", xmlGetAttr, "href")
 # Extraer todos los textos de los enlace <href>
 texto_enlaces <- xpathSApply(contenido_xml, "//a", xmlValue)
 
+tabla_datos <- data.frame("Enlace" = urls_enlaces,"texto" = texto_enlaces,stringsAsFactors = F)
+
+tabla_datos
+
 ```
 
-
-
-##### 4 Generar una tabla con cada enlace encontrado, indicando el texto que acompaña el enlace, y el número de veces que aparece un enlace con ese mismo objetivo.
+##### 1.4. Generar una tabla con cada enlace encontrado, indicando el texto que acompaña el enlace, y el número de veces que aparece un enlace con ese mismo objetivo.
 
 ```{r mostrar_tabla}
-# Extraer todos los nodos <a>
 
-tabla_datos <- data.frame("texto" = texto_enlaces,
-                             "Enlace" = urls_enlaces,
-                             stringsAsFactors = F)
+# Contar la frecuencia de cada enlace
+  tabla_datos$Frecuencia <- table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)]
+
 tabla_datos
 ``` 
 
+
+##### 1.5. Para cada enlace, seguirlo e indicar si está activo (podemos usar el código de status HTTP al hacer una petición a esa URL).
 
 
 
