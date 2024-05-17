@@ -5,26 +5,63 @@ date: "2024-05-17"
 output: html_document
 ---
 
+# Actividad Evaluable 2
+
+## 1. Datos Elegantes + Análisis de Datos con Web Scrapping
+
+### Pregunta 1:
+
+Queremos programar un programa de tipo web scrapping con el que podamos obtener una página web, mediante su URL, y poder analizar su contenido HTML con tal de extraer datos e información específica.
+
+####1. Descargar la página web de la URL indicada, y almacenarlo en un formato de "R" apto para ser tratado.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+Instalaciòn de las librerìas
+```{r descarga}
+#install.packages("httr")
+#install.packages("XML")
+library(httr)
+library(XML)
+```
+URL de la página web a descargar
+```{r pagina}
+url <- "https://www.example.com"
+respuesta <- GET(url)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+#### Analizar el contenido de la web, buscando el título de la página (que en HTML se etiqueta como “title”).
+Instalaciòn de las librerìas
+```{r mostrar}
+if (status_code(respuesta) == 200) {
+  # Obtener el contenido de la respuesta como texto
+  contenido_html <- content(respuesta, as = "text", encoding = "UTF-8")
+  
+  # Convertir el contenido HTML a un formato XML
+  contenido_xml <- htmlTreeParse(contenido_html, useInternalNodes = TRUE)
+  
+  # Extraer el título de la página
+  titulo <- xpathSApply(contenido_xml, "//title", xmlValue)
+  
+  # Extraer todos los nodos <a>
+  enlaces <- xpathSApply(contenido_xml, "//a", xmlGetAttr, "href")
+  
+  # Extraer todos los párrafos <p>
+  parrafos <- xpathSApply(contenido_xml, "//p", xmlValue)
+  
+  # Mostrar los datos extraídos
+  print(paste("Título de la página:", titulo))
+  print("Enlaces encontrados:")
+  print(enlaces)
+  print("Párrafos encontrados:")
+  print(parrafos)
+} else {
+  stop("Error al descargar la página web.")
+}
 ```
+
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
