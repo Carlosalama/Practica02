@@ -371,57 +371,155 @@ un formato de “R” apto para ser tratado.</p>
 <p>Instalaciòn de las librerìas</p>
 <pre class="r"><code>#install.packages(&quot;httr&quot;)
 #install.packages(&quot;XML&quot;)
-library(httr)</code></pre>
-<pre><code>## Warning: package &#39;httr&#39; was built under R version 4.3.3</code></pre>
-<pre class="r"><code>library(XML)</code></pre>
-<pre><code>## Warning: package &#39;XML&#39; was built under R version 4.3.2</code></pre>
+library(httr)
+library(XML)</code></pre>
 <p>URL de la página web a descargar</p>
-<pre class="r"><code>url &lt;- &quot;https://www.example.com&quot;
-respuesta &lt;- GET(url)</code></pre>
+<pre class="r"><code>url &lt;- &quot;https://www.mediawiki.org/wiki/MediaWiki.com&quot;
+respuesta &lt;- GET(url)
+
+# Obtener el contenido de la respuesta como texto
+contenido_html &lt;- content(respuesta, as = &quot;text&quot;, encoding = &quot;UTF-8&quot;)
+contenido_xml &lt;- htmlTreeParse(contenido_html, useInternalNodes = TRUE)</code></pre>
 <div id="analizar-el-contenido-de-la-web-buscando-el-título-de-la-página-que-en-html-se-etiqueta-como-title." class="section level4">
 <h4>Analizar el contenido de la web, buscando el título de la página
 (que en HTML se etiqueta como “title”).</h4>
-<p>Instalaciòn de las librerìas</p>
-<pre class="r"><code>if (status_code(respuesta) == 200) {
-  # Obtener el contenido de la respuesta como texto
-  contenido_html &lt;- content(respuesta, as = &quot;text&quot;, encoding = &quot;UTF-8&quot;)
-  
-  # Convertir el contenido HTML a un formato XML
-  contenido_xml &lt;- htmlTreeParse(contenido_html, useInternalNodes = TRUE)
-  
-  # Extraer el título de la página
-  titulo &lt;- xpathSApply(contenido_xml, &quot;//title&quot;, xmlValue)
-  
-  # Extraer todos los nodos &lt;a&gt;
-  enlaces &lt;- xpathSApply(contenido_xml, &quot;//a&quot;, xmlGetAttr, &quot;href&quot;)
-  
-  # Extraer todos los párrafos &lt;p&gt;
-  parrafos &lt;- xpathSApply(contenido_xml, &quot;//p&quot;, xmlValue)
-  
-  # Mostrar los datos extraídos
-  print(paste(&quot;Título de la página:&quot;, titulo))
-  print(&quot;Enlaces encontrados:&quot;)
-  print(enlaces)
-  print(&quot;Párrafos encontrados:&quot;)
-  print(parrafos)
-} else {
-  stop(&quot;Error al descargar la página web.&quot;)
-}</code></pre>
-<pre><code>## [1] &quot;Título de la página: Example Domain&quot;
-## [1] &quot;Enlaces encontrados:&quot;
-## [1] &quot;https://www.iana.org/domains/example&quot;
-## [1] &quot;Párrafos encontrados:&quot;
-## [1] &quot;This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.&quot;
-## [2] &quot;More information...&quot;</code></pre>
+<pre class="r"><code># Extraer el título de la página
+titulo &lt;- xpathSApply(contenido_xml, &quot;//title&quot;, xmlValue)</code></pre>
+<p>El titulo es: MediaWiki.com - MediaWiki.</p>
 </div>
 <div id="analizar-el-contenido-de-la-web-buscando-todos-los-enlaces-que-en-html-se-etiquetan-como-a-buscando-el-texto-del-enlace-así-como-la-url." class="section level4">
 <h4>Analizar el contenido de la web, buscando todos los enlaces (que en
 HTML se etiquetan como “a”), buscando el texto del enlace, así como la
 URL.</h4>
-<p>la cantidad de enlaces de tipo “a” son <a href="https://www.iana.org/domains/example" class="uri">https://www.iana.org/domains/example</a></p>
+<pre class="r"><code># Extraer URL de los enlace &lt;a&gt;
+urls_enlaces &lt;- xpathSApply(contenido_xml, &quot;//a&quot;, xmlGetAttr, &quot;href&quot;)
+
+# Extraer todos los textos de los enlace &lt;href&gt;
+texto_enlaces &lt;- xpathSApply(contenido_xml, &quot;//a&quot;, xmlValue)</code></pre>
+<div id="generar-una-tabla-con-cada-enlace-encontrado-indicando-el-texto-que-acompaña-el-enlace-y-el-número-de-veces-que-aparece-un-enlace-con-ese-mismo-objetivo." class="section level5">
+<h5>4 Generar una tabla con cada enlace encontrado, indicando el texto
+que acompaña el enlace, y el número de veces que aparece un enlace con
+ese mismo objetivo.</h5>
+<pre class="r"><code># Extraer todos los nodos &lt;a&gt;
+
+tabla_datos &lt;- data.frame(&quot;texto&quot; = texto_enlaces,
+                             &quot;Enlace&quot; = urls_enlaces,
+                             stringsAsFactors = F)
+tabla_datos</code></pre>
+<pre><code>##                                           texto
+## 1                               Jump to content
+## 2                                     Main page
+## 3                                 Get MediaWiki
+## 4                                Get extensions
+## 5                                     Tech blog
+## 6                                    Contribute
+## 7                                     User help
+## 8                                           FAQ
+## 9                              Technical manual
+## 10                                 Support desk
+## 11                                Communication
+## 12                             Developer portal
+## 13                              Code statistics
+## 14                             Community portal
+## 15                               Recent changes
+## 16                            Translate content
+## 17                                  Random page
+## 18                                 Village pump
+## 19                                      Sandbox
+## 20                                 \n\t\n\t\t\n
+## 21                               \n\nSearch\n\t
+## 22                                  \n\nEnglish
+## 23                               Create account
+## 24                                       Log in
+## 25                               Create account
+## 26                                       Log in
+## 27                                   learn more
+## 28                                Contributions
+## 29                                         Talk
+## 30                                         Page
+## 31                                   Discussion
+## 32                                       Create
+## 33                                       Create
+## 34                              What links here
+## 35                                  Upload file
+## 36                                Special pages
+## 37                            Printable version
+## 38                             Page information
+## 39                            Get shortened URL
+## 40                             Download QR code
+## 41                   search for this page title
+## 42                      search the related logs
+## 43                             create this page
+## 44 https://www.mediawiki.org/wiki/MediaWiki.com
+## 45                               Privacy policy
+## 46                          About mediawiki.org
+## 47                                  Disclaimers
+## 48                              Code of Conduct
+## 49                                   Developers
+## 50                                   Statistics
+## 51                             Cookie statement
+## 52                                  Mobile view
+## 53                                             
+## 54                                             
+##                                                                                                Enlace
+## 1                                                                                        #bodyContent
+## 2                                                                                     /wiki/MediaWiki
+## 3                                                                                      /wiki/Download
+## 4                                                        /wiki/Special:MyLanguage/Category:Extensions
+## 5                                                                     https://techblog.wikimedia.org/
+## 6                                                          /wiki/Special:MyLanguage/How_to_contribute
+## 7                                                              /wiki/Special:MyLanguage/Help:Contents
+## 8                                                                 /wiki/Special:MyLanguage/Manual:FAQ
+## 9                                                            /wiki/Special:MyLanguage/Manual:Contents
+## 10                                                                         /wiki/Project:Support_desk
+## 11                                                             /wiki/Special:MyLanguage/Communication
+## 12                                                                   https://developer.wikimedia.org/
+## 13                                                                       /wiki/Development_statistics
+## 14                                                                                 /wiki/Project:Help
+## 15                                                                        /wiki/Special:RecentChanges
+## 16                                                                        /wiki/Special:LanguageStats
+## 17                                                                               /wiki/Special:Random
+## 18                                                                         /wiki/Project:Village_Pump
+## 19                                                                              /wiki/Project:Sandbox
+## 20                                                                                    /wiki/MediaWiki
+## 21                                                                               /wiki/Special:Search
+## 22                                                                                                  #
+## 23                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 24                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 25                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 26                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 27                                                                            /wiki/Help:Introduction
+## 28                                                                      /wiki/Special:MyContributions
+## 29                                                                               /wiki/Special:MyTalk
+## 30                                             /w/index.php?title=MediaWiki.com&amp;action=edit&amp;redlink=1
+## 31                                        /w/index.php?title=Talk:MediaWiki.com&amp;action=edit&amp;redlink=1
+## 32                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 33                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 34                                                          /wiki/Special:WhatLinksHere/MediaWiki.com
+## 35                                                  //commons.wikimedia.org/wiki/Special:UploadWizard
+## 36                                                                         /wiki/Special:SpecialPages
+## 37                                                                                javascript:print();
+## 38                                                       /w/index.php?title=MediaWiki.com&amp;action=info
+## 39 /w/index.php?title=Special:UrlShortener&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 40       /w/index.php?title=Special:QrCode&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 41                                                                 /wiki/Special:Search/MediaWiki.com
+## 42                         https://www.mediawiki.org/w/index.php?title=Special:Log&amp;page=MediaWiki.com
+## 43                              https://www.mediawiki.org/w/index.php?title=MediaWiki.com&amp;action=edit
+## 44                                                       https://www.mediawiki.org/wiki/MediaWiki.com
+## 45                     https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Privacy_policy
+## 46                                                                                /wiki/Project:About
+## 47                                                                   /wiki/Project:General_disclaimer
+## 48                                  https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct
+## 49                                                                    https://developer.wikimedia.org
+## 50                                                    https://stats.wikimedia.org/#/www.mediawiki.org
+## 51                   https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Cookie_statement
+## 52                  //m.mediawiki.org/w/index.php?title=MediaWiki.com&amp;mobileaction=toggle_view_mobile
+## 53                                                                   https://wikimediafoundation.org/
+## 54                                                                         https://www.mediawiki.org/</code></pre>
 <p>Note that the <code>echo = FALSE</code> parameter was added to the
 code chunk to prevent printing of the R code that generated the
 plot.</p>
+</div>
 </div>
 </div>
 </div>

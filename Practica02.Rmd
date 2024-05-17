@@ -62,6 +62,8 @@ if (status_code(respuesta) == 200) {
 }
 ```
 
+#### Analizar el contenido de la web, buscando todos los enlaces (que en HTML se etiquetan como “a”), buscando el texto del enlace, así como la URL.
 
+la cantidad de enlaces de tipo "a" son `r enlaces`
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
