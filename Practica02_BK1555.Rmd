@@ -78,7 +78,34 @@ tabla_datos
 
 
 ##### 1.5. Para cada enlace, seguirlo e indicar si está activo (podemos usar el código de status HTTP al hacer una petición a esa URL).
+```{r mostrar_url_activo}
 
+##convertir url de relativas a absolutas  
+convertir_url <- function(url){
+  if(grepl("^/|#", url)) {
+    url <-paste0("https://www.mediawiki.org/", url)
+  } 
+    return(url)
+}
+
+## Función para verificar el estado de la URL
+verificar_estado <- function(url){
+    tryCatch({
+      respuesta <- HEAD(url)
+      if (status_code(respuesta) == 200) {
+        Sys.sleep(2)
+        return("200")
+      } else {
+        return("nulo")
+      }
+    }, error = function(e) {
+      return("nulo")
+    })
+  }  
+tabla_datos$Estado <- lapply(tabla_datos$Enlace, verificar_estado)
+
+tabla_datos
+```
 
 
 

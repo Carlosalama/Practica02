@@ -634,6 +634,141 @@ tabla_datos</code></pre>
 <div id="para-cada-enlace-seguirlo-e-indicar-si-está-activo-podemos-usar-el-código-de-status-http-al-hacer-una-petición-a-esa-url." class="section level5">
 <h5>1.5. Para cada enlace, seguirlo e indicar si está activo (podemos
 usar el código de status HTTP al hacer una petición a esa URL).</h5>
+<pre class="r"><code>##convertir url de relativas a absolutas  
+convertir_url &lt;- function(url){
+  if(grepl(&quot;^/|#&quot;, url)) {
+    url &lt;-paste0(&quot;https://www.mediawiki.org/&quot;, url)
+  } 
+    return(url)
+}
+
+## Función para verificar el estado de la URL
+verificar_estado &lt;- function(url){
+    tryCatch({
+      respuesta &lt;- HEAD(url)
+      if (status_code(respuesta) == 200) {
+        Sys.sleep(2)
+        return(&quot;200&quot;)
+      } else {
+        return(&quot;nulo&quot;)
+      }
+    }, error = function(e) {
+      return(&quot;nulo&quot;)
+    })
+  }  
+tabla_datos$Estado &lt;- lapply(tabla_datos$Enlace, verificar_estado)
+
+tabla_datos</code></pre>
+<pre><code>##                                                                                                Enlace
+## 1                                                                                        #bodyContent
+## 2                                                                                     /wiki/MediaWiki
+## 3                                                                                      /wiki/Download
+## 4                                                        /wiki/Special:MyLanguage/Category:Extensions
+## 5                                                                     https://techblog.wikimedia.org/
+## 6                                                          /wiki/Special:MyLanguage/How_to_contribute
+## 7                                                              /wiki/Special:MyLanguage/Help:Contents
+## 8                                                                 /wiki/Special:MyLanguage/Manual:FAQ
+## 9                                                            /wiki/Special:MyLanguage/Manual:Contents
+## 10                                                                         /wiki/Project:Support_desk
+## 11                                                             /wiki/Special:MyLanguage/Communication
+## 12                                                                   https://developer.wikimedia.org/
+## 13                                                                       /wiki/Development_statistics
+## 14                                                                                 /wiki/Project:Help
+## 15                                                                        /wiki/Special:RecentChanges
+## 16                                                                        /wiki/Special:LanguageStats
+## 17                                                                               /wiki/Special:Random
+## 18                                                                         /wiki/Project:Village_Pump
+## 19                                                                              /wiki/Project:Sandbox
+## 20                                                                                    /wiki/MediaWiki
+## 21                                                                               /wiki/Special:Search
+## 22                                                                                                  #
+## 23                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 24                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 25                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 26                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 27                                                                            /wiki/Help:Introduction
+## 28                                                                      /wiki/Special:MyContributions
+## 29                                                                               /wiki/Special:MyTalk
+## 30                                             /w/index.php?title=MediaWiki.com&amp;action=edit&amp;redlink=1
+## 31                                        /w/index.php?title=Talk:MediaWiki.com&amp;action=edit&amp;redlink=1
+## 32                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 33                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 34                                                          /wiki/Special:WhatLinksHere/MediaWiki.com
+## 35                                                  //commons.wikimedia.org/wiki/Special:UploadWizard
+## 36                                                                         /wiki/Special:SpecialPages
+## 37                                                                                javascript:print();
+## 38                                                       /w/index.php?title=MediaWiki.com&amp;action=info
+## 39 /w/index.php?title=Special:UrlShortener&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 40       /w/index.php?title=Special:QrCode&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 41                                                                 /wiki/Special:Search/MediaWiki.com
+## 42                         https://www.mediawiki.org/w/index.php?title=Special:Log&amp;page=MediaWiki.com
+## 43                              https://www.mediawiki.org/w/index.php?title=MediaWiki.com&amp;action=edit
+## 44                                                       https://www.mediawiki.org/wiki/MediaWiki.com
+## 45                     https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Privacy_policy
+## 46                                                                                /wiki/Project:About
+## 47                                                                   /wiki/Project:General_disclaimer
+## 48                                  https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct
+## 49                                                                    https://developer.wikimedia.org
+## 50                                                    https://stats.wikimedia.org/#/www.mediawiki.org
+## 51                   https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Cookie_statement
+## 52                  //m.mediawiki.org/w/index.php?title=MediaWiki.com&amp;mobileaction=toggle_view_mobile
+## 53                                                                   https://wikimediafoundation.org/
+## 54                                                                         https://www.mediawiki.org/
+##                                           texto Frecuencia Estado
+## 1                               Jump to content          1   nulo
+## 2                                     Main page          2   nulo
+## 3                                 Get MediaWiki          1   nulo
+## 4                                Get extensions          1   nulo
+## 5                                     Tech blog          1    200
+## 6                                    Contribute          1   nulo
+## 7                                     User help          1   nulo
+## 8                                           FAQ          1   nulo
+## 9                              Technical manual          1   nulo
+## 10                                 Support desk          1   nulo
+## 11                                Communication          1   nulo
+## 12                             Developer portal          1    200
+## 13                              Code statistics          1   nulo
+## 14                             Community portal          1   nulo
+## 15                               Recent changes          1   nulo
+## 16                            Translate content          1   nulo
+## 17                                  Random page          1   nulo
+## 18                                 Village pump          1   nulo
+## 19                                      Sandbox          1   nulo
+## 20                                 \n\t\n\t\t\n          2   nulo
+## 21                               \n\nSearch\n\t          1   nulo
+## 22                                  \n\nEnglish          1   nulo
+## 23                               Create account          2   nulo
+## 24                                       Log in          2   nulo
+## 25                               Create account          2   nulo
+## 26                                       Log in          2   nulo
+## 27                                   learn more          1   nulo
+## 28                                Contributions          1   nulo
+## 29                                         Talk          1   nulo
+## 30                                         Page          1   nulo
+## 31                                   Discussion          1   nulo
+## 32                                       Create          2   nulo
+## 33                                       Create          2   nulo
+## 34                              What links here          1   nulo
+## 35                                  Upload file          1   nulo
+## 36                                Special pages          1   nulo
+## 37                            Printable version          1   nulo
+## 38                             Page information          1   nulo
+## 39                            Get shortened URL          1   nulo
+## 40                             Download QR code          1   nulo
+## 41                   search for this page title          1   nulo
+## 42                      search the related logs          1    200
+## 43                             create this page          1    200
+## 44 https://www.mediawiki.org/wiki/MediaWiki.com          1   nulo
+## 45                               Privacy policy          1    200
+## 46                          About mediawiki.org          1   nulo
+## 47                                  Disclaimers          1   nulo
+## 48                              Code of Conduct          1    200
+## 49                                   Developers          1    200
+## 50                                   Statistics          1    200
+## 51                             Cookie statement          1    200
+## 52                                  Mobile view          1   nulo
+## 53                                                       1    200
+## 54                                                       1    200</code></pre>
 <p>Note that the <code>echo = FALSE</code> parameter was added to the
 code chunk to prevent printing of the R code that generated the
 plot.</p>
