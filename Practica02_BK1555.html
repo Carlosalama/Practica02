@@ -372,11 +372,14 @@ formato de “R” apto para ser tratado.</h4>
 <p>Instalaciòn de las librerìas</p>
 <pre class="r"><code>#install.packages(&quot;httr&quot;)
 #install.packages(&quot;XML&quot;)
+#install.packages(&quot;ggplot&quot;)
+library(ggplot2)
 library(httr)
 library(XML)</code></pre>
 <p>URL de la página web a descargar</p>
 <pre class="r"><code>url &lt;- &quot;https://www.mediawiki.org/wiki/MediaWiki.com&quot;
 respuesta &lt;- GET(url)
+dominio &lt;- &quot;https://www.mediawiki.org&quot;
 
 # Obtener el contenido de la respuesta como texto
 contenido_html &lt;- content(respuesta, as = &quot;text&quot;, encoding = &quot;UTF-8&quot;)
@@ -518,8 +521,8 @@ texto que acompaña el enlace, y el número de veces que aparece un enlace
 con ese mismo objetivo.</h5>
 <pre class="r"><code># Contar la frecuencia de cada enlace
   tabla_datos$Frecuencia &lt;- table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)]
-
-tabla_datos</code></pre>
+  
+  tabla_datos</code></pre>
 <pre><code>##                                                                                                Enlace
 ## 1                                                                                        #bodyContent
 ## 2                                                                                     /wiki/MediaWiki
@@ -636,8 +639,8 @@ tabla_datos</code></pre>
 usar el código de status HTTP al hacer una petición a esa URL).</h5>
 <pre class="r"><code>##convertir url de relativas a absolutas  
 convertir_url &lt;- function(url){
-  if(grepl(&quot;^/|#&quot;, url)) {
-    url &lt;-paste0(&quot;https://www.mediawiki.org/&quot;, url)
+  if(grepl(&quot;^/|^#&quot;, url)) {
+    url &lt;-paste0(&quot;https://www.mediawiki.org&quot;, url)
   } 
     return(url)
 }
@@ -647,7 +650,7 @@ verificar_estado &lt;- function(url){
     tryCatch({
       respuesta &lt;- HEAD(url)
       if (status_code(respuesta) == 200) {
-        Sys.sleep(2)
+        #Sys.sleep(2)
         return(&quot;200&quot;)
       } else {
         return(&quot;nulo&quot;)
@@ -769,10 +772,313 @@ tabla_datos</code></pre>
 ## 52                                  Mobile view          1   nulo
 ## 53                                                       1    200
 ## 54                                                       1    200</code></pre>
+</div>
+</div>
+</div>
+<div id="pregunta-2" class="section level3">
+<h3>Pregunta 2:</h3>
+<div id="un-histograma-con-la-frecuencia-de-aparición-de-los-enlaces-pero-separado-por-urls-absolutas-con-http-https-y-urls-relativas." class="section level5">
+<h5>2.1. Un histograma con la frecuencia de aparición de los enlaces,
+pero separado por URLs absolutas (con “http…: https:”) y URLs
+relativas.</h5>
+<pre class="r"><code># Extraer URL de los enlace &lt;a&gt;
+urls_enlaces_1 &lt;- xpathSApply(contenido_xml, &quot;//a&quot;, xmlGetAttr, &quot;href&quot;)
+
+tabla_datos &lt;- data.frame(&quot;Enlace&quot; = urls_enlaces_1)
+
+# Contar la frecuencia de cada enlace
+tabla_datos$Frecuencia_ &lt;- table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)]
+tabla_datos</code></pre>
+<pre><code>##                                                                                                Enlace
+## 1                                                                                        #bodyContent
+## 2                                                                                     /wiki/MediaWiki
+## 3                                                                                      /wiki/Download
+## 4                                                        /wiki/Special:MyLanguage/Category:Extensions
+## 5                                                                     https://techblog.wikimedia.org/
+## 6                                                          /wiki/Special:MyLanguage/How_to_contribute
+## 7                                                              /wiki/Special:MyLanguage/Help:Contents
+## 8                                                                 /wiki/Special:MyLanguage/Manual:FAQ
+## 9                                                            /wiki/Special:MyLanguage/Manual:Contents
+## 10                                                                         /wiki/Project:Support_desk
+## 11                                                             /wiki/Special:MyLanguage/Communication
+## 12                                                                   https://developer.wikimedia.org/
+## 13                                                                       /wiki/Development_statistics
+## 14                                                                                 /wiki/Project:Help
+## 15                                                                        /wiki/Special:RecentChanges
+## 16                                                                        /wiki/Special:LanguageStats
+## 17                                                                               /wiki/Special:Random
+## 18                                                                         /wiki/Project:Village_Pump
+## 19                                                                              /wiki/Project:Sandbox
+## 20                                                                                    /wiki/MediaWiki
+## 21                                                                               /wiki/Special:Search
+## 22                                                                                                  #
+## 23                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 24                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 25                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 26                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 27                                                                            /wiki/Help:Introduction
+## 28                                                                      /wiki/Special:MyContributions
+## 29                                                                               /wiki/Special:MyTalk
+## 30                                             /w/index.php?title=MediaWiki.com&amp;action=edit&amp;redlink=1
+## 31                                        /w/index.php?title=Talk:MediaWiki.com&amp;action=edit&amp;redlink=1
+## 32                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 33                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 34                                                          /wiki/Special:WhatLinksHere/MediaWiki.com
+## 35                                                  //commons.wikimedia.org/wiki/Special:UploadWizard
+## 36                                                                         /wiki/Special:SpecialPages
+## 37                                                                                javascript:print();
+## 38                                                       /w/index.php?title=MediaWiki.com&amp;action=info
+## 39 /w/index.php?title=Special:UrlShortener&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 40       /w/index.php?title=Special:QrCode&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 41                                                                 /wiki/Special:Search/MediaWiki.com
+## 42                         https://www.mediawiki.org/w/index.php?title=Special:Log&amp;page=MediaWiki.com
+## 43                              https://www.mediawiki.org/w/index.php?title=MediaWiki.com&amp;action=edit
+## 44                                                       https://www.mediawiki.org/wiki/MediaWiki.com
+## 45                     https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Privacy_policy
+## 46                                                                                /wiki/Project:About
+## 47                                                                   /wiki/Project:General_disclaimer
+## 48                                  https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct
+## 49                                                                    https://developer.wikimedia.org
+## 50                                                    https://stats.wikimedia.org/#/www.mediawiki.org
+## 51                   https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Cookie_statement
+## 52                  //m.mediawiki.org/w/index.php?title=MediaWiki.com&amp;mobileaction=toggle_view_mobile
+## 53                                                                   https://wikimediafoundation.org/
+## 54                                                                         https://www.mediawiki.org/
+##    Frecuencia_
+## 1            1
+## 2            2
+## 3            1
+## 4            1
+## 5            1
+## 6            1
+## 7            1
+## 8            1
+## 9            1
+## 10           1
+## 11           1
+## 12           1
+## 13           1
+## 14           1
+## 15           1
+## 16           1
+## 17           1
+## 18           1
+## 19           1
+## 20           2
+## 21           1
+## 22           1
+## 23           2
+## 24           2
+## 25           2
+## 26           2
+## 27           1
+## 28           1
+## 29           1
+## 30           1
+## 31           1
+## 32           2
+## 33           2
+## 34           1
+## 35           1
+## 36           1
+## 37           1
+## 38           1
+## 39           1
+## 40           1
+## 41           1
+## 42           1
+## 43           1
+## 44           1
+## 45           1
+## 46           1
+## 47           1
+## 48           1
+## 49           1
+## 50           1
+## 51           1
+## 52           1
+## 53           1
+## 54           1</code></pre>
+<pre class="r"><code># Clasificar URLs en absolutas y relativas
+tabla_datos$Tipo &lt;- ifelse(grepl(&quot;^http|^http:&quot;, tabla_datos$Enlace), &quot;Absoluta&quot;, &quot;Relativa&quot;)
+
+# Calcular las frecuencias totales para cada tipo
+frecuencias_totales &lt;- aggregate(Frecuencia_ ~ Tipo, data = tabla_datos, sum)
+
+# Crear el histograma usando ggplot2
+  ggplot(frecuencias_totales, aes(x = Tipo, y = Frecuencia_, fill = Tipo)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  geom_text(aes(label = Frecuencia_), vjust = -0.5) +  # Añadir etiquetas con las cantidades
+  labs(title = &quot;Frecuencia de URLs Absolutas y Relativas&quot;, x = &quot;Tipo de URL&quot;, y = &quot;Frecuencia&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="data:image/png;base64,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ooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpooCABkdACagG62migIAGR0AJqAbraaKAgAZHQAmoButpomC8gN4DOliXAU48jfZoiVkH7IEGF/mMcmFdBjixniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCeJgoIaHAElIBqsJ4mCghocASUgGqwniYKCGhwBJSAarCe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A5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiI0NA4UHPUbUuA5yMsqIjQ0DhQc9RtS4DnIyyoiNDQOFBz1G1LgOcjLKiIzNeQO95YV0GOOk5qtZlgBM/S/jeaIlZB+yBwoOeo2pdBjgZZUVHhoDCg56jal0GOBllRUeGgMKDnqNqXQY4GWVFR4aA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" width="672" /></p>
+</div>
+<div id="un-gráfico-de-barras-indicando-la-suma-de-enlaces-que-apuntan-a-otros-dominios-o-servicios-distinto-a-httpswww.mediawiki.org-en-el-caso-de-ejemplo-vs.-la-suma-de-los-otros-enlaces.-aquí-queremos-distinguir-enlaces-que-apuntan-a-mediawiki-versus-el-resto.-sabemos-que-las-urls-relativas-ya-apuntan-dentro-por-lo-tanto-hay-que-analizar-las-urls-absolutas-y-comprobar-que-apunten-a-httpswww.mediawiki.org.-pista-cuando-usamos-la-función-sum-o-similares-sobre-un-vector-con-valores-na-nos-encontramos-que-el-resultado-es-na.-esto-se-da-porque-no-se-puede-conocer-una-suma-que-incluye-un-elemento-desconocido.-r-permite-incluir-un-parámetro-a-estas-funciones-na.rm-true-para-indicar-que-se-ignoren-los-elementos-na.-si-para-cuando-convertimos-nulls-a-na-no-los-filtramos-para-nuestro-data.frame-nos-será-útil-indicar-que-se-ignoren-los-na-para-estas-operaciones." class="section level5">
+<h5>2.2. Un gráfico de barras indicando la suma de enlaces que apuntan a
+otros dominios o servicios (distinto a <a href="https://www.mediawiki.org" class="uri">https://www.mediawiki.org</a> en el caso de ejemplo) vs. la
+suma de los otros enlaces. Aquí queremos distinguir enlaces que apuntan
+a mediawiki versus el resto. Sabemos que las URLs relativas ya apuntan
+dentro, por lo tanto hay que analizar las URLs absolutas y comprobar que
+apunten a <a href="https://www.mediawiki.org" class="uri">https://www.mediawiki.org</a>. Pista: Cuando usamos la
+función sum() o similares sobre un vector con valores NA, nos
+encontramos que el resultado es NA. Esto se da porque no se puede
+conocer una suma que incluye un elemento “desconocido”. R permite
+incluir un parámetro a estas funciones “na.rm = TRUE” para indicar que
+se ignoren los elementos NA. Si para cuando convertimos NULLs a NA, no
+los filtramos para nuestro data.frame, nos será útil indicar que se
+ignoren los NA para estas operaciones.</h5>
+<pre class="r"><code># Extraer URL de los enlace &lt;a&gt;
+urls_enlaces_2 &lt;- xpathSApply(contenido_xml, &quot;//a&quot;, xmlGetAttr, &quot;href&quot;)
+
+tabla_datos &lt;- data.frame(&quot;Enlace&quot; = urls_enlaces_2)
+
+##Detectar url absolutas y relativas dentro del dominio https://www.mediawiki.org
+convertir_url &lt;- function(url){
+  if(grepl(&quot;^/https://www.mediawiki.org|^/http://www.mediawiki.org|^/|^#&quot;, url)) {
+    return(&quot;Dentro del dominio&quot;)
+  } 
+    return(&quot;Fuera del dominio&quot;)
+}
+
+tabla_datos$Estatus &lt;- lapply(tabla_datos$Enlace, convertir_url)
+tabla_datos</code></pre>
+<pre><code>##                                                                                                Enlace
+## 1                                                                                        #bodyContent
+## 2                                                                                     /wiki/MediaWiki
+## 3                                                                                      /wiki/Download
+## 4                                                        /wiki/Special:MyLanguage/Category:Extensions
+## 5                                                                     https://techblog.wikimedia.org/
+## 6                                                          /wiki/Special:MyLanguage/How_to_contribute
+## 7                                                              /wiki/Special:MyLanguage/Help:Contents
+## 8                                                                 /wiki/Special:MyLanguage/Manual:FAQ
+## 9                                                            /wiki/Special:MyLanguage/Manual:Contents
+## 10                                                                         /wiki/Project:Support_desk
+## 11                                                             /wiki/Special:MyLanguage/Communication
+## 12                                                                   https://developer.wikimedia.org/
+## 13                                                                       /wiki/Development_statistics
+## 14                                                                                 /wiki/Project:Help
+## 15                                                                        /wiki/Special:RecentChanges
+## 16                                                                        /wiki/Special:LanguageStats
+## 17                                                                               /wiki/Special:Random
+## 18                                                                         /wiki/Project:Village_Pump
+## 19                                                                              /wiki/Project:Sandbox
+## 20                                                                                    /wiki/MediaWiki
+## 21                                                                               /wiki/Special:Search
+## 22                                                                                                  #
+## 23                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 24                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 25                                    /w/index.php?title=Special:CreateAccount&amp;returnto=MediaWiki.com
+## 26                                        /w/index.php?title=Special:UserLogin&amp;returnto=MediaWiki.com
+## 27                                                                            /wiki/Help:Introduction
+## 28                                                                      /wiki/Special:MyContributions
+## 29                                                                               /wiki/Special:MyTalk
+## 30                                             /w/index.php?title=MediaWiki.com&amp;action=edit&amp;redlink=1
+## 31                                        /w/index.php?title=Talk:MediaWiki.com&amp;action=edit&amp;redlink=1
+## 32                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 33                                                       /w/index.php?title=MediaWiki.com&amp;action=edit
+## 34                                                          /wiki/Special:WhatLinksHere/MediaWiki.com
+## 35                                                  //commons.wikimedia.org/wiki/Special:UploadWizard
+## 36                                                                         /wiki/Special:SpecialPages
+## 37                                                                                javascript:print();
+## 38                                                       /w/index.php?title=MediaWiki.com&amp;action=info
+## 39 /w/index.php?title=Special:UrlShortener&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 40       /w/index.php?title=Special:QrCode&amp;url=https%3A%2F%2Fwww.mediawiki.org%2Fwiki%2FMediaWiki.com
+## 41                                                                 /wiki/Special:Search/MediaWiki.com
+## 42                         https://www.mediawiki.org/w/index.php?title=Special:Log&amp;page=MediaWiki.com
+## 43                              https://www.mediawiki.org/w/index.php?title=MediaWiki.com&amp;action=edit
+## 44                                                       https://www.mediawiki.org/wiki/MediaWiki.com
+## 45                     https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Privacy_policy
+## 46                                                                                /wiki/Project:About
+## 47                                                                   /wiki/Project:General_disclaimer
+## 48                                  https://www.mediawiki.org/wiki/Special:MyLanguage/Code_of_Conduct
+## 49                                                                    https://developer.wikimedia.org
+## 50                                                    https://stats.wikimedia.org/#/www.mediawiki.org
+## 51                   https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Cookie_statement
+## 52                  //m.mediawiki.org/w/index.php?title=MediaWiki.com&amp;mobileaction=toggle_view_mobile
+## 53                                                                   https://wikimediafoundation.org/
+## 54                                                                         https://www.mediawiki.org/
+##               Estatus
+## 1  Dentro del dominio
+## 2  Dentro del dominio
+## 3  Dentro del dominio
+## 4  Dentro del dominio
+## 5   Fuera del dominio
+## 6  Dentro del dominio
+## 7  Dentro del dominio
+## 8  Dentro del dominio
+## 9  Dentro del dominio
+## 10 Dentro del dominio
+## 11 Dentro del dominio
+## 12  Fuera del dominio
+## 13 Dentro del dominio
+## 14 Dentro del dominio
+## 15 Dentro del dominio
+## 16 Dentro del dominio
+## 17 Dentro del dominio
+## 18 Dentro del dominio
+## 19 Dentro del dominio
+## 20 Dentro del dominio
+## 21 Dentro del dominio
+## 22 Dentro del dominio
+## 23 Dentro del dominio
+## 24 Dentro del dominio
+## 25 Dentro del dominio
+## 26 Dentro del dominio
+## 27 Dentro del dominio
+## 28 Dentro del dominio
+## 29 Dentro del dominio
+## 30 Dentro del dominio
+## 31 Dentro del dominio
+## 32 Dentro del dominio
+## 33 Dentro del dominio
+## 34 Dentro del dominio
+## 35 Dentro del dominio
+## 36 Dentro del dominio
+## 37  Fuera del dominio
+## 38 Dentro del dominio
+## 39 Dentro del dominio
+## 40 Dentro del dominio
+## 41 Dentro del dominio
+## 42  Fuera del dominio
+## 43  Fuera del dominio
+## 44  Fuera del dominio
+## 45  Fuera del dominio
+## 46 Dentro del dominio
+## 47 Dentro del dominio
+## 48  Fuera del dominio
+## 49  Fuera del dominio
+## 50  Fuera del dominio
+## 51  Fuera del dominio
+## 52 Dentro del dominio
+## 53  Fuera del dominio
+## 54  Fuera del dominio</code></pre>
+<pre class="r"><code># Contar la cantidad de cada enlace
+tabla_datos$Cantidad &lt;- as.integer(table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)])
+
+# Calcular las frecuencias totales para cada tipo
+#Cantidad_totales &lt;- aggregate(Cantidad ~ Estatus, data = tabla_datos, sum)
+
+# Crear el histograma usando ggplot2
+#  ggplot(Cantidad_totales, aes(x = Estatus, y = Cantidad, fill = Estatus)) +
+#  geom_bar(stat = &quot;identity&quot;) +
+#  geom_text(aes(label = Cantidad), vjust = -0.5) +  # Añadir etiquetas con las cantidades
+#  labs(title = &quot;Frecuencia de URLs Absolutas y Relativas&quot;, x = &quot;Estatus&quot;, y = &quot;Cantidad&quot;) +
+#  theme_minimal()</code></pre>
+</div>
+<div id="un-gráfico-de-tarta-pie-chart-indicando-los-porcentajes-de-status-de-nuestro-análisis.-por-ejemplo-si-hay-6-enlaces-con-status-200-y-4-enlaces-con-status-404-la-tarta-mostrará-un-60-con-la-etiqueta-200-y-un-40-con-la-etiqueta-404.-este-gráfico-lo-uniremos-a-los-anteriores.-el-objetivo-final-es-obtener-una-imagen-que-recopile-los-gráficos-generados.-usad-la-capacidad-de-r-y-ggplot2-para-componer-gráficos-en-una-sola-figura.-si-tales-gráficos-están-compuestos-directamente-desde-r-y-no-en-el-documento-memoria-se-puntuará-mejor.-indicar-a-continuación-la-solución-justificando-cada-detalle-y-decisión-tomada-e-incluyendo-los-gráficos." class="section level5">
+<h5>2.3. Un gráfico de tarta (pie chart) indicando los porcentajes de
+Status de nuestro análisis. Por ejemplo, si hay 6 enlaces con status
+“200” y 4 enlaces con status “404”, la tarta mostrará un 60% con la
+etiqueta “200” y un 40% con la etiqueta “404”. Este gráfico lo uniremos
+a los anteriores. El objetivo final es obtener una imagen que recopile
+los gráficos generados. Usad la capacidad de R y ggplot2 para componer
+gráficos en una sola figura. Si tales gráficos están compuestos
+directamente desde R (y no en el documento memoria), se puntuará mejor.
+Indicar a continuación la solución, justificando cada detalle y decisión
+tomada, e incluyendo los gráficos.</h5>
 <p>Note that the <code>echo = FALSE</code> parameter was added to the
 code chunk to prevent printing of the R code that generated the
 plot.</p>
-</div>
 </div>
 </div>
 </div>

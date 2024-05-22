@@ -1,7 +1,4 @@
 
-
-
-
 ---
 title: "Practica02"
 author: "Christian Meza, Carlos Alama y Rony Orocollo"
@@ -13,7 +10,7 @@ output: html_document
 
 ## 1. Datos Elegantes + Análisis de Datos con Web Scrapping
 
-### Pregunta 1:
+### Pregunta 1: 
 
 Queremos programar un programa de tipo web scrapping con el que podamos obtener una página web, mediante su URL, y poder analizar su contenido HTML con tal de extraer datos e información específica.
 
@@ -22,20 +19,20 @@ Queremos programar un programa de tipo web scrapping con el que podamos obtener 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 Instalaciòn de las librerìas
 ```{r carga_librerias, warning=FALSE, message=FALSE}
 #install.packages("httr")
 #install.packages("XML")
+#install.packages("ggplot")
+library(ggplot2)
 library(httr)
 library(XML)
 ```
-
 URL de la página web a descargar
-
 ```{r get_pagina}
 url <- "https://www.mediawiki.org/wiki/MediaWiki.com"
 respuesta <- GET(url)
+dominio <- "https://www.mediawiki.org"
 
 # Obtener el contenido de la respuesta como texto
 contenido_html <- content(respuesta, as = "text", encoding = "UTF-8")
@@ -72,18 +69,19 @@ tabla_datos
 
 # Contar la frecuencia de cada enlace
   tabla_datos$Frecuencia <- table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)]
-
-tabla_datos
+  
+  tabla_datos
 ``` 
 
 
 ##### 1.5. Para cada enlace, seguirlo e indicar si está activo (podemos usar el código de status HTTP al hacer una petición a esa URL).
+
 ```{r mostrar_url_activo}
 
 ##convertir url de relativas a absolutas  
 convertir_url <- function(url){
-  if(grepl("^/|#", url)) {
-    url <-paste0("https://www.mediawiki.org/", url)
+  if(grepl("^/|^#", url)) {
+    url <-paste0("https://www.mediawiki.org", url)
   } 
     return(url)
 }
@@ -93,7 +91,7 @@ verificar_estado <- function(url){
     tryCatch({
       respuesta <- HEAD(url)
       if (status_code(respuesta) == 200) {
-        Sys.sleep(2)
+        #Sys.sleep(2)
         return("200")
       } else {
         return("nulo")
@@ -105,13 +103,74 @@ verificar_estado <- function(url){
 tabla_datos$Estado <- lapply(tabla_datos$Enlace, verificar_estado)
 
 tabla_datos
+``` 
+
+### Pregunta 2:
+
+##### 2.1. Un histograma con la frecuencia de aparición de los enlaces, pero separado por URLs absolutas (con “http…: https:”) y URLs relativas.
+
+```{r histograma_frecuencia}
+
+# Extraer URL de los enlace <a>
+urls_enlaces_1 <- xpathSApply(contenido_xml, "//a", xmlGetAttr, "href")
+
+tabla_datos <- data.frame("Enlace" = urls_enlaces_1)
+
+# Contar la frecuencia de cada enlace
+tabla_datos$Frecuencia_ <- table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)]
+tabla_datos
+
+# Clasificar URLs en absolutas y relativas
+tabla_datos$Tipo <- ifelse(grepl("^http|^http:", tabla_datos$Enlace), "Absoluta", "Relativa")
+
+# Calcular las frecuencias totales para cada tipo
+frecuencias_totales <- aggregate(Frecuencia_ ~ Tipo, data = tabla_datos, sum)
+
+# Crear el histograma usando ggplot2
+  ggplot(frecuencias_totales, aes(x = Tipo, y = Frecuencia_, fill = Tipo)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Frecuencia_), vjust = -0.5) +  # Añadir etiquetas con las cantidades
+  labs(title = "Frecuencia de URLs Absolutas y Relativas", x = "Tipo de URL", y = "Frecuencia") +
+  theme_minimal()
+
 ```
 
+##### 2.2. Un gráfico de barras indicando la suma de enlaces que apuntan a otros dominios o servicios (distinto a https://www.mediawiki.org en el caso de ejemplo) vs. la suma de los otros enlaces. Aquí queremos distinguir enlaces que apuntan a mediawiki versus el resto. Sabemos que las URLs relativas ya apuntan dentro, por lo tanto hay que analizar las URLs absolutas y comprobar que apunten a https://www.mediawiki.org. Pista: Cuando usamos la función sum() o similares sobre un vector con valores NA, nos encontramos que el resultado es NA. Esto se da porque no se puede conocer una suma que incluye un elemento “desconocido”. R permite incluir un parámetro a estas funciones “na.rm = TRUE” para indicar que se ignoren los elementos NA. Si para cuando convertimos NULLs a NA, no los filtramos para nuestro data.frame, nos será útil indicar que se ignoren los NA para estas operaciones.
+
+```{r grafico_barras}
+# Extraer URL de los enlace <a>
+urls_enlaces_2 <- xpathSApply(contenido_xml, "//a", xmlGetAttr, "href")
+
+tabla_datos <- data.frame("Enlace" = urls_enlaces_2)
+
+##Detectar url absolutas y relativas dentro del dominio https://www.mediawiki.org
+convertir_url <- function(url){
+  if(grepl("^/https://www.mediawiki.org|^/http://www.mediawiki.org|^/|^#", url)) {
+    return("Dentro del dominio")
+  } 
+    return("Fuera del dominio")
+}
+
+tabla_datos$Estatus <- lapply(tabla_datos$Enlace, convertir_url)
+tabla_datos
+
+# Contar la cantidad de cada enlace
+tabla_datos$Cantidad <- as.integer(table(tabla_datos$Enlace)[as.character(tabla_datos$Enlace)])
+
+# Calcular las frecuencias totales para cada tipo
+#Cantidad_totales <- aggregate(Cantidad ~ Estatus, data = tabla_datos, sum)
+
+# Crear el histograma usando ggplot2
+#  ggplot(Cantidad_totales, aes(x = Estatus, y = Cantidad, fill = Estatus)) +
+#  geom_bar(stat = "identity") +
+#  geom_text(aes(label = Cantidad), vjust = -0.5) +  # Añadir etiquetas con las cantidades
+#  labs(title = "Frecuencia de URLs Absolutas y Relativas", x = "Estatus", y = "Cantidad") +
+#  theme_minimal()
 
 
+```
 
-
-
+##### 2.3. Un gráfico de tarta (pie chart) indicando los porcentajes de Status de nuestro análisis. Por ejemplo, si hay 6 enlaces con status “200” y 4 enlaces con status “404”, la tarta mostrará un 60% con la etiqueta “200” y un 40% con la etiqueta “404”. Este gráfico lo uniremos a los anteriores. El objetivo final es obtener una imagen que recopile los gráficos generados. Usad la capacidad de R y ggplot2 para componer gráficos en una sola figura. Si tales gráficos están compuestos directamente desde R (y no en el documento memoria), se puntuará mejor. Indicar a continuación la solución, justificando cada detalle y decisión tomada, e incluyendo los gráficos.
 
 
 
